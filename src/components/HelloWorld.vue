@@ -1,50 +1,67 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router" target="_blank" rel="noopener">router</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-vuex" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-unit-mocha" target="_blank" rel="noopener">unit-mocha</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-e2e-cypress" target="_blank" rel="noopener">e2e-cypress</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript" target="_blank" rel="noopener">typescript</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+<html>
+  <head>
+  </head>
+  <body>
+    <div class="hello">
+      <h1>Nummer: {{store.getNumber()}}</h1>
+      <h1>Name: {{store.getName()}}</h1>
+    </div>
+    <div>
+      <p>Wir rechnen nun mit den Zahlen {{calculator.firstNumber}} und {{calculator.secondNumber}} </p>
+      <p>Addition: {{calculator.addition()}} </p>
+      <p>Subtraktion: {{calculator.subtraction()}} </p>
+      <p>Multiplikation: {{calculator.multiplication()}} </p>
+      <p>Divison: {{calculator.division()}} </p>
+      <p>Http Result:  {{resultHttp.message}} </p>
+      <p v-if="resultHttpArray.length != 0">Http Result Array first element: {{resultHttpArray[0].message}} </p>
+      <p v-if="resultHttpArray.length != 0">Http Result Array second element: {{resultHttpArray[1].message}} </p>
+      <button type="button" class="btn btn-dark" @click="getMethod">Start Http Request</button>
+      <button type="button" class="btn btn-primary" @click="changeStoreData"> Change Store </button>
+      <button type="button" class="btn btn-warning" @click="getMethodArray"> Start Http Request Array </button>
+      <button type="button" class="btn btn-success" @click="changeArrayValue"> Change Array Value </button>
+    </div>
+  </body>
+</html>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
+import {Store} from '@/classes/Store';
+import {Calculator} from '@/classes/Calculator';
+import {ResponseResult} from '@/classes/ResponseResult';
+import {RESTCONTROLLER } from '@/main';
 
-@Options({
-  props: {
-    msg: String
-  }
-})
 export default class HelloWorld extends Vue {
-  msg!: string
+  store = new Store();
+  calculator = new Calculator(10, 2);
+  resultHttp = new ResponseResult();
+  resultHttpArray: ResponseResult[] = [];
+
+  changeStoreData(): void{
+    // Error, because private! -> this.store._number = "4711";
+    this.store.setNumber("4711");
+    //Error, because private! -> this.store._name = "Xenia"
+    this.store.setName("Xenia")
+    //Error, because private! -> this.store.greet();
+  }
+
+  getMethod(): void{
+    RESTCONTROLLER.getCall('/test')
+    .then(response => this.resultHttp = response.data)
+    .catch(error => this.resultHttp = error);
+  }
+
+  getMethodArray(): void{
+    RESTCONTROLLER.getCall('/testArray')
+    .then(response => this.resultHttpArray =  response.data)
+    .catch(error => this.resultHttpArray = error);
+  }
+
+  changeArrayValue(): void{
+    this.resultHttpArray[0].message = 'OK3'
+  }
+  
 }
 </script>
 
